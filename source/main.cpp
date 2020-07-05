@@ -81,8 +81,8 @@ void readFile ( string filename )
 		k++;
 	};
 
-	int nig = 0;
-	int ger = 0;
+	int joe = 0;
+	int mama = 0;
 	string endDetect = "EOL";
 
 	do 
@@ -93,10 +93,10 @@ void readFile ( string filename )
 			{
 				l = source[nig][ger];
 				cout << l;
-				ger++;
+				joe++;
 			}
-		} nig++;
-	} while ( source[nig][0] != endDetect );
+		} mama++;
+	} while ( source[joe][0] != endDetect );
 	
 };
 
