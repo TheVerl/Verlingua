@@ -84,7 +84,7 @@ void readFile ( string filename )
 	int joe = 0;
 	int mama = 0;
 	string endDetect = "EOL";
-
+	/*
 	do 
 	{
 		do
@@ -97,7 +97,7 @@ void readFile ( string filename )
 			}
 		} mama++;
 	} while ( source[joe][0] != endDetect );
-	
+	*/	
 };
 
 int main ( int argc, char* argv[])
