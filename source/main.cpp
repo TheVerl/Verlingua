@@ -89,9 +89,9 @@ void readFile ( string filename )
 	{
 		do
 		{
-			for ( string l; string != endDetect; ger++; )
+			for ( string l; string != endDetect; mama++; )
 			{
-				l = source[nig][ger];
+				l = source[joe][mama];
 				cout << l;
 				joe++;
 			}
