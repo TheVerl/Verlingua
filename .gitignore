@@ -2,4 +2,4 @@
 build/
 .vscode/
 .*.swp
-Verlingua-Build*
+bin/

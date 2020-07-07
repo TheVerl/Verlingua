@@ -1,1 +1,0 @@
-./Verlingua-Build-*
