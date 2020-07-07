@@ -5,7 +5,7 @@ HEADER	= lib.h cmd.h block.h
 OUT	= ../Verlingua-Build-
 NO := $(shell cat ../constructer/no)
 TARGET = $(OUT)$(NO)
-CC	 = g++
+CC	 = clang++
 FLAGS	 = -g -c -Wall -Wswitch-bool
 LFLAGS	 = 
 

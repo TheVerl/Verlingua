@@ -14,14 +14,34 @@ using namespace std;
 // Define global variables
 
 const std::string suffix = ".verl";
-string source[255][255];
+string **source;
 
 // Error handling.
 int error ( int code, char* x[] )
 {
-	cout << "Usage: " << x[0] << " FILE\n";
-	return 1;
+	switch ( code )
+	{
+		case ( 1 ):
+			cout << "ERROR! Inadequate ammount of arguments!\nUsage: " << x[0] << " FILE\nError Code 1\r";
+			return 1;
+			break;
+		case ( 2 ):
+			cout << "ERROR! Not enough memory!\nError Code 2\r";
+			return 1;
+			break;
+	};
 };
+
+// Initialises the file 2D Array.
+void fuckStallman()
+{
+
+	/*
+	 * Put Code in Here *
+	                    */
+		
+};
+
 
 // Reads the file into the 2D Array 'source'.
 void readFile ( string filename )
@@ -70,20 +90,29 @@ void readFile ( string filename )
 		//cout << sourceSize << "\n";
 		
 		// Puts the words in the array into the 2D Array.
-		int j = 0;
-
-		for ( int nothing = 0; j < tempSize; j++ )
+		//int j = 0;
+		
+		for ( int j = 0; j < tempSize; j++ )
 		{
 			source[k][j] = temp[j];
 		}
-		source[k][j++] = 'EOL';
 		
 		k++;
 	};
 
-	int joe = 0;
-	int mama = 0;
-	string endDetect = "EOL";
+	int rows = (sizeof(source)/sizeof(source[0]));
+	int cols = (sizeof(source[0])/sizeof(int));
+	cout << rows << "\n";
+	cout << cols << "\n";
+
+	for ( int i = 0; i < rows; i++ ) 
+	{
+		for ( int j = 0; j < cols; j++)
+		{
+			cout << source[i][j] << "\r";
+		};
+	};
+
 	/*
 	do 
 	{
