@@ -18,9 +18,3 @@ bool hasSuffix ( const std::string &str, const std::string &suffix )
     }
     
 }
-
-/*int getSizeArrayInt (int array[]) { return (sizeof(array)/sizeof(*array)); };
-
-int getSizeArrayString (string array[]) { return (sizeof(array)/sizeof(*array)); };
-
-int getSizeArrayBool (bool array[]) { return (sizeof(array)/sizeof(*array)); };*/
