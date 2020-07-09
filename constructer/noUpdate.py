@@ -14,7 +14,7 @@ with open(history, 'r') as f:
 now = datetime.now()
 time = now.strftime("%c")
 newBuildNo = oldBuildNo + 1
-string = time + " : Build " + str(newBuildNo) + "\r"
+string = time + " : Build " + str(newBuildNo) + "\r\n"
 
 f = open(history, 'a')
 f.write(string)
