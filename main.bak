@@ -170,11 +170,6 @@ int main ( int argc, char* argv[])
 	};
 }; 
 
-/*
- * PARSING
- * STUFF
- */
-// Parses through the file vector to find blocks and define them.
 void initBlocks ( int subvec, bool debug )
 {
 	string element = content[subvec][0];
@@ -193,7 +188,6 @@ void initBlocks ( int subvec, bool debug )
 		{
 			cout << "Found routine decleration at (ignoring newlines) line " << subvec+1 << "." << endl;
 		};
-		// Sets the tempStart variable to the current subvector. tempStart will be used to define the start member of the block object.
 		tempStart = subvec;
 		
 	}
@@ -213,55 +207,75 @@ void initBlocks ( int subvec, bool debug )
 		{
 			cout << "Found new block of routine from (ignoring newlines) line " << tempStart+1 << " to " << subvec+1 << "." << endl;
 		};
-		// Defines the members of the routine block object.
-		routineIndex.push_back(Routine());
-		routineIndex.back().name = content[tempStart][1];
-		routineIndex.back().start = tempStart;
-		routineIndex.back().end = subvec;
-		routineIndex.back().defineContent(content);
-		// Parameter handling.
-		/*
-		bool areThereParameters = false	;
-		if ( content[tempStart].size() > 1 )
-		{	
-			areThereParameters = true;
-			for ( int i = 2; i <= content[tempStart].size(); i++ )
-			{
-				string line = content[tempStart][i];
-				routineIndex.back().parameters.push_back(line);
-			};
-		};
-		*/
-		// If in debug mode, we will display just more verbose info about the block.
-		if ( debug )
+		if ( routineIndex.size() == 0)
 		{
-			//cout << "The new routine is of element" << routineIndex.back << "." << endl;
-			cout << "There is a new routine whose name is " << routineIndex.back().name << "." << endl;
-			cout << "It's start and end subvectors are " << routineIndex.back().start << " and " << routineIndex.back().end << "." << endl;
-			/*
-			if ( areThereParameters )
+			routineIndex.push_back(Routine());
+			routineIndex[0].name = content[tempStart][1];
+			//cout << routineIndex[0].name << endl;
+			routineIndex[0].start = tempStart;
+			//cout << routineIndex[0].start << endl;
+			routineIndex[0].end = subvec;
+			//cout << routineIndex[0].end << endl;
+			//
+			routineIndex[0].defineContent(content);
+			for ( int i = 2; i <= content[subvec].size(); i++ )
 			{
-				vector<string> param = routineIndex.back().parameters;
-				for ( int i = 0; i <= param.size(); i++ )
+				string line = content[subvec][i];
+				routineIndex[0].parameters[i] = line;
+			};
+
+			if ( debug )
+			{
+				cout << "The new routine is of element " << 0 << "." << endl;
+				cout << "It's name is " << routineIndex[0].name << "." << endl;
+				cout << "It's start and end subvectors are " << routineIndex[0].start << " and " << routineIndex[0].end << "." << endl;
+				cout << "Defining its contents..." << endl;
+				cout << "And it's content is:" << endl;
+				vector<vector<string>> blockContent = routineIndex[0].bContent;
+				for ( int i = 0; i < blockContent.size(); i++ )
 				{
-					cout << param[i] << " ";
+					for ( int j = 0; j < blockContent[i].size(); j++ )
+					{
+						//cout << i << " " << j << endl;
+						cout << blockContent[i][j] << " ";
+					}
+					cout << endl;
 				}
-				cout << endl;
-			}
-			*/
-			cout << "Finally, it's content is:" << endl;
-			vector<vector<string>> blockContent = routineIndex.back().bContent;
-			for ( int i = 0; i < blockContent.size(); i++ )
+			};
+		}
+		else
+		{
+			routineIndex.push_back(Routine());
+			//routineIndex.resize( routineIndex.size() + 1 );
+			int ID = routineIndex.size();
+			routineIndex[ID].name = content[tempStart][1];
+			routineIndex[ID].start = tempStart;
+			routineIndex[ID].end = subvec;
+			routineIndex[ID].defineContent(content);
+			for ( int i = 2; i <= content[subvec].size(); i++ )
 			{
+				string line = content[subvec][i];
+				routineIndex[ID].parameters[i] = line;
+			};
 			
-				for ( int j = 0; j < blockContent[i].size(); j++ )
+			if ( debug )
+			{
+				cout << "The new routine is of element" << ID << "." << endl;
+				cout << "It's name is " << routineIndex[ID].name << "." << endl;
+				cout << "It's start and end subvectors are " << routineIndex[ID].start << " and " << routineIndex[ID].end << "." << endl;
+				cout << "Finally, it's contents is:" << endl;
+				vector<vector<string>> blockContent = routineIndex[ID].bContent;
+				for ( int i = 0; i < blockContent.size(); i++ )
 				{
-					cout << blockContent[i][j] << " ";
+				
+					for ( int j = 0; j < blockContent[i].size(); j++ )
+					{
+						cout << blockContent[i][j] << " ";
+					};
+					cout << endl;
 				};
-				cout << endl;
 			};
 		};
-		
 	}
 	else if ( element.compare("endi") == 0 )
 	{

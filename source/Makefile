@@ -6,8 +6,8 @@ OUT	= ../bin/Verlingua-Build-
 NO := $(shell cat ../constructer/no)
 TARGET = $(OUT)$(NO)
 CC	 = clang++
-FLAGS	 = -g -c -Wall -Wswitch-bool -std=c++14
-LFLAGS	 = 
+FLAGS	 = -g -c -w -Wswitch-bool -std=c++14
+LFLAGS	 =
 
 all: $(DIROBJS) $(TARGET)
 	#$(CC) -g $(OBJS) -o $(OUT)$(NO) $(LFLAGS)
