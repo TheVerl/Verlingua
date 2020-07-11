@@ -7,6 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <array>
+#include <iterator>
 
 // Include local libraries.
 #include "lib.h"
@@ -22,6 +23,8 @@ int tempStart = 0;
 int lineNumber = 0;
 vector<If> ifIndex;
 vector<Routine> routineIndex;
+bool readingRoutine = false;
+bool readingIf = false;
 
 // Error handling.
 int error ( int code, char* x[] )
@@ -34,6 +37,14 @@ int error ( int code, char* x[] )
 			break;
 		case ( 2 ):
 			cout << "ERROR! Not enough memory!\nError Code 2\r";
+			return 1;
+			break;
+		case ( 3 ):
+			cout << "ERROR! No expression for if block at subvector " << tempStart << "!\nError Code 3\r";
+			return 1;
+			break;
+		case ( 4 ):
+			cout << "ERROR! Unsupported block type for parentBlock of block!\nErro Code 4\r";
 			return 1;
 			break;
 	};
@@ -91,6 +102,7 @@ void readFileIntoFileVector ( string filename )
 		};
 		if ( lineB.compare(" ") == -19 )
 		{
+			numberOfLines--;
 			continue;
 		}
 		else
@@ -165,6 +177,17 @@ int main ( int argc, char* argv[])
 			initBlocks( i, debug );
 			//lineNumber++; 
 		};
+		cout << "--------PRINTING WHOLE FILE VECTOR--------" << endl;
+		//cout << 0 << " ::: ";
+		for ( int i = 0; i < content.size(); i++)
+		{
+			cout << endl;
+			cout << i << " ::: ";
+			for ( int j = 0; j < content[i].size(); j++ )
+			{
+				cout << content[i][j] << " ";
+			}
+		}
 		
 		return 0;
 	};
@@ -174,11 +197,126 @@ int main ( int argc, char* argv[])
  * PARSING
  * STUFF
  */
+
+void parseIf ( int start, int end, string parentBlockID[2] )
+{
+	// Define members of the if block object.
+	ifIndex.push_back(If());
+	ifIndex.back().start = start;
+	ifIndex.back().end = end;
+	ifIndex.back().parentBlock.push_back(parentBlockID[0]);
+	ifIndex.back().parentBlock.push_back(parentBlockID[1]);
+	if ( parentBlockID[0].compare("ROUTINE") == 0)
+	{
+		string parentBlockType = "routine";
+		int parentBlockProperID = stoi(parentBlockID[1]);
+		string parentBlockName = routineIndex[parentBlockProperID].name;
+		cout << "Found new block of if from subvector " << start << " to " << end << " and is a subblock of block type " << parentBlockType << " with the name of " << parentBlockName << "." << endl;
+
+	}
+	
+	else if ( parentBlockID[0].compare("IF") == 0)
+	{
+		string parentBlockType = "if statement";
+		int parentBlockProperID = stoi(parentBlockID[1]);
+		cout << "Found new block of if from subvector " << start << " to " << end << " and is a subblock of block type " << parentBlockType << " with the expression of" << endl;
+		for ( int i = 0; i < ifIndex[parentBlockProperID].expression.size(); i++ )
+		{
+			cout << ifIndex[parentBlockProperID].expression[i] << " ";
+		}
+		cout << endl;
+			
+	}
+	else
+	{
+		error(4, NULL);
+	};
+	
+
+	// Define the expression.
+	if ( content[start].size() >= 1)
+	{
+		for ( int i = 0; i < content[start].size(); i++ )
+		{
+			string line = content[start][i];
+			ifIndex.back().expression.push_back(line);	
+		};
+	}
+	else
+	{
+		error( 3, NULL );
+	};
+	tempStart = 0;
+
+	// Read through the ifBlock to find any subblocks.
+	for ( int i = start+1; i <= end; i++ )
+	{
+		string word = content[i][0];
+
+		if ( word.compare("if") == 0)
+		{
+			tempStart = i;
+		};
+
+		if ( word.compare("endi") == 0)
+		{
+			int index = ifIndex.begin() - ifIndex.begin();
+			string id[2] = {"IF", to_string(index)};
+			parseIf( tempStart, i, id );	
+		};
+	}
+}
+
+
+void parseRoutine ( int start, int end )
+{
+	bool done = false;
+	// Define members of the routine block object.
+	routineIndex.push_back(Routine());
+	routineIndex.back().name = content[start][1];
+	routineIndex.back().start = start;
+	routineIndex.back().end = end;
+	routineIndex.back().defineContent(content);
+
+	// Define the parameters, if there are any.
+	bool areThereParameters = false;
+	if ( content [tempStart].size() >= 2)
+	{
+		areThereParameters = true;
+		for ( int i = 2; i < content[tempStart].size(); i++ )
+		{
+			string line = content[tempStart][i];
+			routineIndex.back().parameters.push_back(line);
+		};
+	};
+	tempStart = 0;
+
+	// Read through the routineBlock to find any subblocks.
+	for ( int i = start; i <= end; i++ )
+	{
+		string line = content[i][0];
+		
+		if ( done == true )
+		{
+			break;
+		}
+		else if ( line.compare("if") == 0)
+		{
+			tempStart = i;
+		}
+		else if ( line.compare("endi") == 0)
+		{
+			int index = routineIndex.begin() - routineIndex.begin();
+			string id[2] = {"ROUTINE", to_string(index)};
+			parseIf( tempStart, i, id);
+		};
+	};
+}
+
 // Parses through the file vector to find blocks and define them.
 void initBlocks ( int subvec, bool debug )
 {
 	string element = content[subvec][0];
-	//cout << element << endl;
 	
 	// Debugging.
 	if ( debug )
@@ -187,23 +325,20 @@ void initBlocks ( int subvec, bool debug )
 	};
 
 	// Start tags.
-	if ( element.compare("routine") == 0 ) 
+	if ( element.compare("#") == 0)
+	{
+		content.erase(content.begin()+(subvec));
+	}
+
+	else if ( element.compare("routine") == 0 ) 
 	{
 		if ( debug )
 		{
-			cout << "Found routine decleration at (ignoring newlines) line " << subvec+1 << "." << endl;
+			cout << "Found routine decleration at subvector " << subvec << "." << endl;
 		};
 		// Sets the tempStart variable to the current subvector. tempStart will be used to define the start member of the block object.
 		tempStart = subvec;
-		
-	}
-	else if ( element.compare("if") == 0 )
-	{
-		if ( debug )
-		{
-			cout << "Found if decleration at (ignoring new lines) line " << subvec+1 << "." << endl;
-		};
-		tempStart = subvec;	
+		readingRoutine = true;		
 	};
 
 	// End tags.
@@ -211,64 +346,9 @@ void initBlocks ( int subvec, bool debug )
 	{
 		if ( debug )
 		{
-			cout << "Found new block of routine from (ignoring newlines) line " << tempStart+1 << " to " << subvec+1 << "." << endl;
+			cout << "Found new block of routine from subvector " << tempStart << " to " << subvec << "." << endl;
 		};
-		// Defines the members of the routine block object.
-		routineIndex.push_back(Routine());
-		routineIndex.back().name = content[tempStart][1];
-		routineIndex.back().start = tempStart;
-		routineIndex.back().end = subvec;
-		routineIndex.back().defineContent(content);
-		// Parameter handling.
-		/*
-		bool areThereParameters = false	;
-		if ( content[tempStart].size() > 1 )
-		{	
-			areThereParameters = true;
-			for ( int i = 2; i <= content[tempStart].size(); i++ )
-			{
-				string line = content[tempStart][i];
-				routineIndex.back().parameters.push_back(line);
-			};
-		};
-		*/
-		// If in debug mode, we will display just more verbose info about the block.
-		if ( debug )
-		{
-			//cout << "The new routine is of element" << routineIndex.back << "." << endl;
-			cout << "There is a new routine whose name is " << routineIndex.back().name << "." << endl;
-			cout << "It's start and end subvectors are " << routineIndex.back().start << " and " << routineIndex.back().end << "." << endl;
-			/*
-			if ( areThereParameters )
-			{
-				vector<string> param = routineIndex.back().parameters;
-				for ( int i = 0; i <= param.size(); i++ )
-				{
-					cout << param[i] << " ";
-				}
-				cout << endl;
-			}
-			*/
-			cout << "Finally, it's content is:" << endl;
-			vector<vector<string>> blockContent = routineIndex.back().bContent;
-			for ( int i = 0; i < blockContent.size(); i++ )
-			{
-			
-				for ( int j = 0; j < blockContent[i].size(); j++ )
-				{
-					cout << blockContent[i][j] << " ";
-				};
-				cout << endl;
-			};
-		};
-		
-	}
-	else if ( element.compare("endi") == 0 )
-	{
-		if ( debug )
-		{
-			cout << "Found new block of if from (ignoring newlines) line " << tempStart+1 << " to " << subvec+1 << "." << endl;
-		};
+		parseRoutine( tempStart, subvec );	
 	}
 };
 
