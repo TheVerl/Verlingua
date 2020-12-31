@@ -98,7 +98,7 @@ void readFileIntoFileVector ( string filename )
 		getline( fileB, lineB );
 		if ( debug )
 		{
-			cout << "lineB.compare(" ")" << lineB.compare(" ") << endl;
+			//cout << "lineB.compare(" ")" << lineB.compare(" ") << endl;
 		};
 		if ( lineB.compare(" ") == -19 )
 		{
@@ -212,6 +212,7 @@ void parseIf ( int start, int end, string parentBlockID[2] )
 		int parentBlockProperID = stoi(parentBlockID[1]);
 		string parentBlockName = routineIndex[parentBlockProperID].name;
 		cout << "Found new block of if from subvector " << start << " to " << end << " and is a subblock of block type " << parentBlockType << " with the name of " << parentBlockName << "." << endl;
+		return;
 
 	}
 	
@@ -225,6 +226,7 @@ void parseIf ( int start, int end, string parentBlockID[2] )
 			cout << ifIndex[parentBlockProperID].expression[i] << " ";
 		}
 		cout << endl;
+		return;
 			
 	}
 	else
