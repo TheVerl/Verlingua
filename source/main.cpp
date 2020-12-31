@@ -21,6 +21,7 @@ vector<vector<string>> content;
 bool debug = false;
 int tempStart = 0;
 int lineNumber = 0;
+int mainIndex = -1;
 vector<If> ifIndex;
 vector<Routine> routineIndex;
 bool readingRoutine = false;
@@ -44,7 +45,11 @@ int error ( int code, char* x[] )
 			return 1;
 			break;
 		case ( 4 ):
-			cout << "ERROR! Unsupported block type for parentBlock of block!\nErro Code 4\r";
+			cout << "ERROR! Unsupported block type for parentBlock of block!\nError Code 4\r";
+			return 1;
+			break;
+		case ( 5 ):
+			cout << "ERROR! Could not find a main routine in the file!\nError Code5\r";
 			return 1;
 			break;
 	};
@@ -131,6 +136,7 @@ void printFileVector ()
 
 // Declare functions below main.
 void initBlocks ( int subvec, bool debug );
+void findMain ();
 
 // Main function.
 int main ( int argc, char* argv[])
@@ -177,6 +183,18 @@ int main ( int argc, char* argv[])
 			initBlocks( i, debug );
 			//lineNumber++; 
 		};
+		// Then we go and find the main routine
+		findMain();
+		if ( mainIndex != -1 )
+		{
+			cout << "Found the routine index to the main routine at index " << mainIndex << "." << endl;
+		}
+		else
+		{
+			error( 5, NULL );
+			return 1;
+		}
+		
 		cout << "--------PRINTING WHOLE FILE VECTOR--------" << endl;
 		//cout << 0 << " ::: ";
 		for ( int i = 0; i < content.size(); i++)
@@ -188,6 +206,7 @@ int main ( int argc, char* argv[])
 				cout << content[i][j] << " ";
 			}
 		}
+		cout << endl;
 		
 		return 0;
 	};
@@ -198,6 +217,21 @@ int main ( int argc, char* argv[])
  * STUFF
  */
 
+// Finds the main routine and returns the index to it in routineIndex.
+void findMain()
+{
+	//cout << routineIndex.size() << endl;
+	for ( int i = 0; i < routineIndex.size(); i++ )
+	{
+		if ( routineIndex[i].name.compare("main") == 0 )
+		{
+			mainIndex = i;
+			return;
+		}
+	}
+}
+
+// Parses the if block.
 void parseIf ( int start, int end, string parentBlockID[2] )
 {
 	// Define members of the if block object.
@@ -269,7 +303,7 @@ void parseIf ( int start, int end, string parentBlockID[2] )
 	}
 }
 
-
+// Parses the routine block.
 void parseRoutine ( int start, int end )
 {
 	bool done = false;
