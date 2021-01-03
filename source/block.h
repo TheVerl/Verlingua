@@ -10,7 +10,7 @@
 class Block
 {
 	public:
-		int start, end;
+		int start, end, index;
 		std::vector<std::vector<std::string>> bContent;
 		std::vector<std::string> parentBlock;
 		void defineContent(std::vector<std::vector<std::string>> tempContent);

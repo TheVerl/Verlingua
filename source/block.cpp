@@ -9,7 +9,7 @@ using namespace std;
 class Block
 {
 	public:
-		int start, end;
+		int start, end, index;
 		vector<vector<string>> bContent;
 		vector<string> parentBlock;
 		void defineContent(vector<vector<string>> tempContent);

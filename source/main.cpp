@@ -20,6 +20,7 @@ const std::string suffix = ".verl";
 vector<vector<string>> content;
 bool debug = false;
 int tempStart = 0;
+int tempEnd = 0;
 int lineNumber = 0;
 int mainIndex = -1;
 vector<If> ifIndex;
@@ -92,6 +93,9 @@ void readFileIntoFileVector ( string filename )
 	if ( debug )
 	{
 		cout << "The number of lines in this file is: " << numberOfLines << endl;
+		cout << endl;
+		cout << "--------READING FILE VECTOR--------" << endl;
+		cout << endl;
 	}
 	string lineB;
 	ifstream fileB(filename);
@@ -101,18 +105,23 @@ void readFileIntoFileVector ( string filename )
 	while ( numberOfLines-- )
 	{
 		getline( fileB, lineB );
-		if ( debug )
+		if ( lineB.compare(" ") == -19)
 		{
-			//cout << "lineB.compare(" ")" << lineB.compare(" ") << endl;
-		};
-		if ( lineB.compare(" ") == -19 )
-		{
-			numberOfLines--;
 			continue;
 		}
 		else
 		{
-		content.push_back(chopUpLine(lineB));
+			// Here it also checks if the line is a comment and removes it accordingly as well.
+			vector<string> choppedUpLine;
+			choppedUpLine = chopUpLine(lineB);
+			if ( choppedUpLine[0].compare("#") == 0 )
+			{
+				continue;
+			}
+			else
+			{
+				content.push_back(choppedUpLine);
+			}
 		}
 	}
 
@@ -126,8 +135,8 @@ void printFileVector ()
 	{	
 		for ( int j = 0; j < content[i].size(); j++ )
 		{
-			cout << "Printing element " << j << " of vector " << i << " of supervector content." << endl;
 			cout << content[i][j] <<  " ::: ";
+			cout << "Printing element " << j << " of vector " << i << " of supervector content." << endl;
 		}
 	}
 
@@ -178,6 +187,11 @@ int main ( int argc, char* argv[])
 				printf("Uhhh... How is your file neither compatible nor not compatible?\n");
 		};
 		// Now we read through the file vector and assign the blocks.
+		if ( debug )
+		{
+			cout << "--------PARSING FILE VECTOR--------" << endl;
+			cout << endl;
+		}
 		for ( int i = 0; i < content.size(); i++ )
 		{
 			initBlocks( i, debug );
@@ -187,7 +201,10 @@ int main ( int argc, char* argv[])
 		findMain();
 		if ( mainIndex != -1 )
 		{
-			cout << "Found the routine index to the main routine at index " << mainIndex << "." << endl;
+			if ( debug )
+			{
+				cout << "Found the routine index to the main routine at index " << mainIndex << "." << endl;
+			}
 		}
 		else
 		{
@@ -195,18 +212,23 @@ int main ( int argc, char* argv[])
 			return 1;
 		}
 		
-		cout << "--------PRINTING WHOLE FILE VECTOR--------" << endl;
-		//cout << 0 << " ::: ";
-		for ( int i = 0; i < content.size(); i++)
+		// Print out the file vector if we are in debug mode.
+		if ( debug )
 		{
 			cout << endl;
-			cout << i << " ::: ";
-			for ( int j = 0; j < content[i].size(); j++ )
+			cout << "--------PRINTING WHOLE FILE VECTOR--------" << endl;
+			for ( int i = 0; i < content.size(); i++)
 			{
-				cout << content[i][j] << " ";
+				cout << endl;
+				cout << i << " ::: ";
+				for ( int j = 0; j < content[i].size(); j++ )
+				{
+					cout << content[i][j] << " ";
+				}
 			}
+			cout << endl;
+			cout << endl;
 		}
-		cout << endl;
 		
 		return 0;
 	};
@@ -240,32 +262,38 @@ void parseIf ( int start, int end, string parentBlockID[2] )
 	ifIndex.back().end = end;
 	ifIndex.back().parentBlock.push_back(parentBlockID[0]);
 	ifIndex.back().parentBlock.push_back(parentBlockID[1]);
+	ifIndex.back().index = ifIndex.size() - 1;
+
+	// Sets up some variables of the parent block depending on it's block type.
 	if ( parentBlockID[0].compare("ROUTINE") == 0)
 	{
 		string parentBlockType = "routine";
 		int parentBlockProperID = stoi(parentBlockID[1]);
 		string parentBlockName = routineIndex[parentBlockProperID].name;
-		cout << "Found new block of if from subvector " << start << " to " << end << " and is a subblock of block type " << parentBlockType << " with the name of " << parentBlockName << "." << endl;
-		return;
-
+		if ( debug )
+		{
+			cout << "Found new block of if from subvector " << start << " to " << end << " and is a subblock of block type " << parentBlockType << " with the name of " << parentBlockName << "." << endl;
+		}
 	}
 	
 	else if ( parentBlockID[0].compare("IF") == 0)
 	{
 		string parentBlockType = "if statement";
 		int parentBlockProperID = stoi(parentBlockID[1]);
-		cout << "Found new block of if from subvector " << start << " to " << end << " and is a subblock of block type " << parentBlockType << " with the expression of" << endl;
-		for ( int i = 0; i < ifIndex[parentBlockProperID].expression.size(); i++ )
+		if ( debug )
 		{
-			cout << ifIndex[parentBlockProperID].expression[i] << " ";
+			cout << "Found new block of if from subvector " << start << " to " << end << " and is a subblock of block type " << parentBlockType << " with the expression of ";
+			for ( int i = 0; i < ifIndex[parentBlockProperID].expression.size(); i++ )
+			{
+				cout << ifIndex[parentBlockProperID].expression[i] << " ";
+			}
 		}
-		cout << endl;
-		return;
-			
 	}
+	// If we can't find out what the parent's block type is, throw an error.
 	else
 	{
 		error(4, NULL);
+		return;
 	};
 	
 
@@ -277,42 +305,63 @@ void parseIf ( int start, int end, string parentBlockID[2] )
 			string line = content[start][i];
 			ifIndex.back().expression.push_back(line);	
 		};
+		if ( debug )
+		{
+			cout << "The if block has an expression of ";
+			for ( int i = 0; i < ifIndex.back().expression.size(); i++ )
+			{
+				cout << ifIndex.back().expression[i] << " ";
+			}
+			cout << endl;
+		}
 	}
 	else
 	{
 		error( 3, NULL );
 	};
-	tempStart = 0;
+	tempStart = NULL;
+	tempEnd = NULL;
 
 	// Read through the ifBlock to find any subblocks.
-	for ( int i = start+1; i <= end; i++ )
+	for ( int i = start; i <= end; i++ )
 	{
 		string word = content[i][0];
 
-		if ( word.compare("if") == 0)
+		if ( word.compare("if") == 0 && i != start && tempStart == NULL )
 		{
 			tempStart = i;
 		};
 
-		if ( word.compare("endi") == 0)
+		if ( word.compare("endi") == 0 && i != end)
 		{
-			int index = ifIndex.begin() - ifIndex.begin();
-			string id[2] = {"IF", to_string(index)};
-			parseIf( tempStart, i, id );	
+			tempEnd = i;	
 		};
 	}
+	// If we did find a sub block, parse it; Otherwise, return.
+	if (tempStart && tempEnd)
+	{
+		int index = ifIndex.back().index;
+		string id[2] = {"IF", to_string(index)};
+		parseIf( tempStart, tempEnd, id );
+	}
+	return;
 }
 
 // Parses the routine block.
 void parseRoutine ( int start, int end )
 {
-	bool done = false;
 	// Define members of the routine block object.
 	routineIndex.push_back(Routine());
 	routineIndex.back().name = content[start][1];
 	routineIndex.back().start = start;
 	routineIndex.back().end = end;
 	routineIndex.back().defineContent(content);
+	routineIndex.back().index = routineIndex.size() - 1;
+
+	if ( debug )
+	{
+		cout << "Routine has the name of " << routineIndex.back().name << endl;
+	}
 
 	// Define the parameters, if there are any.
 	bool areThereParameters = false;
@@ -321,32 +370,35 @@ void parseRoutine ( int start, int end )
 		areThereParameters = true;
 		for ( int i = 2; i < content[tempStart].size(); i++ )
 		{
-			string line = content[tempStart][i];
-			routineIndex.back().parameters.push_back(line);
+			string word = content[tempStart][i];
+			routineIndex.back().parameters.push_back(word);
 		};
 	};
-	tempStart = 0;
+	tempStart = NULL;
+	tempEnd = NULL;
 
 	// Read through the routineBlock to find any subblocks.
 	for ( int i = start; i <= end; i++ )
 	{
-		string line = content[i][0];
+		string word = content[i][0];
 		
-		if ( done == true )
+		if ( word.compare("if") == 0 && tempStart == NULL )
 		{
-			break;
+				tempStart = i;
 		}
-		else if ( line.compare("if") == 0)
+		else if ( word.compare("endi") == 0)
 		{
-			tempStart = i;
-		}
-		else if ( line.compare("endi") == 0)
-		{
-			int index = routineIndex.begin() - routineIndex.begin();
-			string id[2] = {"ROUTINE", to_string(index)};
-			parseIf( tempStart, i, id);
+			tempEnd = i;
 		};
 	};
+	// If we did find a sub block, parse it; Otherwise, return.
+	if ( tempStart && tempEnd )
+	{
+		int index = routineIndex.back().index;
+		string id[2] = {"ROUTINE", to_string(index)};
+		parseIf( tempStart, tempEnd, id);
+	}
+	return;
 }
 
 // Parses through the file vector to find blocks and define them.
@@ -354,19 +406,15 @@ void initBlocks ( int subvec, bool debug )
 {
 	string element = content[subvec][0];
 	
-	// Debugging.
+	// Debugging info.
 	if ( debug )
 	{
-		cout << "Accesing first element of subvector " << subvec << " of file vector.\n" << "the element is " << element << "." << endl;
+		cout << "Accesing first element of subvector " << subvec << " of file vector.\n" << "The element is " << element << "." << endl;
 	};
 
 	// Start tags.
-	if ( element.compare("#") == 0)
-	{
-		content.erase(content.begin()+(subvec));
-	}
 
-	else if ( element.compare("routine") == 0 ) 
+	if ( element.compare("routine") == 0 ) 
 	{
 		if ( debug )
 		{
@@ -384,7 +432,7 @@ void initBlocks ( int subvec, bool debug )
 		{
 			cout << "Found new block of routine from subvector " << tempStart << " to " << subvec << "." << endl;
 		};
-		parseRoutine( tempStart, subvec );	
+		parseRoutine( tempStart, subvec );
+		tempStart = NULL;	
 	}
 };
-
