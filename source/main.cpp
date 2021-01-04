@@ -12,6 +12,8 @@
 // Include local libraries.
 #include "lib.h"
 #include "block.h"
+#include "cmd.h"
+#include "var.h"
 
 using namespace std;
 
@@ -25,6 +27,7 @@ int lineNumber = 0;
 int mainIndex = -1;
 vector<If> ifIndex;
 vector<Routine> routineIndex;
+vector<Variable> variableIndex;
 bool readingRoutine = false;
 bool readingIf = false;
 
@@ -145,6 +148,7 @@ void printFileVector ()
 
 // Declare functions below main.
 void initBlocks ( int subvec, bool debug );
+void initSymbols ();
 void findMain ();
 
 // Main function.
@@ -211,7 +215,8 @@ int main ( int argc, char* argv[])
 			error( 5, NULL );
 			return 1;
 		}
-		
+		// Define the symbols.
+		initSymbols();
 		// Print out the file vector if we are in debug mode.
 		if ( debug )
 		{
@@ -236,7 +241,20 @@ int main ( int argc, char* argv[])
 
 /*
  * PARSING
- * STUFF
+ * SYMBOLS
+ */
+
+void initSymbols()
+{
+	/*for ( int i = 0; i < ifIndex.size(); i++ )
+	{
+	
+	}*/
+}
+
+/*
+ * PARSING
+ * BLOCKS
  */
 
 // Finds the main routine and returns the index to it in routineIndex.
@@ -322,29 +340,41 @@ void parseIf ( int start, int end, string parentBlockID[2] )
 	tempStart = NULL;
 	tempEnd = NULL;
 
-	// Read through the ifBlock to find any subblocks.
-	for ( int i = start; i <= end; i++ )
+	vector<vector<int>> subBlockVector;
+
+	// Read through the routineBlock to find any subblocks.
+	for ( int i = start+1; i <= end; i++ )
 	{
 		string word = content[i][0];
-
-		if ( word.compare("if") == 0 && i != start && tempStart == NULL )
+		
+		if ( word.compare("if") == 0 && tempStart == NULL )
 		{
 			tempStart = i;
-		};
-
-		if ( word.compare("endi") == 0 && i != end)
+		}
+		else if ( word.compare("endi") == 0 && tempEnd == NULL )
 		{
-			tempEnd = i;	
+			tempEnd = i;
+			int x = tempStart;
+			int y = tempEnd;
+			vector<int> xy = {x,y};
+			subBlockVector.push_back(xy);
+			tempStart = NULL;
+			tempEnd = NULL;
 		};
-	}
-	// If we did find a sub block, parse it; Otherwise, return.
-	if (tempStart && tempEnd)
+	};
+	// If we did find sub blocks, parse them; Otherwise, return.
+	if ( !subBlockVector.empty() )
 	{
-		int index = ifIndex.back().index;
-		string id[2] = {"IF", to_string(index)};
-		parseIf( tempStart, tempEnd, id );
+		for ( int i = 0; i < subBlockVector.size(); i++ )
+		{
+			int index = routineIndex.back().index;
+			string id[2] = {"IF", to_string(index)};
+			parseIf( subBlockVector[i][0], subBlockVector[i][1], id);
+		}
+		return;
 	}
 	return;
+
 }
 
 // Parses the routine block.
@@ -377,6 +407,8 @@ void parseRoutine ( int start, int end )
 	tempStart = NULL;
 	tempEnd = NULL;
 
+	vector<vector<int>> subBlockVector;
+
 	// Read through the routineBlock to find any subblocks.
 	for ( int i = start; i <= end; i++ )
 	{
@@ -386,17 +418,27 @@ void parseRoutine ( int start, int end )
 		{
 				tempStart = i;
 		}
-		else if ( word.compare("endi") == 0)
+		else if ( word.compare("endi") == 0 && tempEnd == NULL )
 		{
 			tempEnd = i;
+			int x = tempStart;
+			int y = tempEnd;
+			vector<int> xy = {x,y};
+			subBlockVector.push_back(xy);
+			tempStart = NULL;
+			tempEnd = NULL;
 		};
 	};
-	// If we did find a sub block, parse it; Otherwise, return.
-	if ( tempStart && tempEnd )
+	// If we did find sub blocks, parse them; Otherwise, return.
+	if ( !subBlockVector.empty() )
 	{
-		int index = routineIndex.back().index;
-		string id[2] = {"ROUTINE", to_string(index)};
-		parseIf( tempStart, tempEnd, id);
+		for ( int i = 0; i < subBlockVector.size(); i++ )
+		{
+			int index = routineIndex.back().index;
+			string id[2] = {"ROUTINE", to_string(index)};
+			parseIf( subBlockVector[i][0], subBlockVector[i][1], id);
+		}
+		return;
 	}
 	return;
 }

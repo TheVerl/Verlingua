@@ -1,7 +1,7 @@
 DIROBJS = ../build
 OBJS	= $(addprefix $(DIROBJS)/, $(patsubst %.cpp, %.o, $(wildcard *.cpp)))
-SOURCE	= main.cpp lib.cpp cmd.cpp block.cpp
-HEADER	= lib.h cmd.h block.h
+SOURCE	= main.cpp lib.cpp cmd.cpp block.cpp var.cpp
+HEADER	= lib.h cmd.h block.h var.h
 OUT	= ../bin/Verlingua-Build-
 NO := $(shell cat ../constructer/no)
 TARGET = $(OUT)$(NO)
