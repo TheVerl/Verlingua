@@ -282,6 +282,9 @@ void parseIf ( int start, int end, string parentBlockID[2] )
 	ifIndex.back().parentBlock.push_back(parentBlockID[1]);
 	ifIndex.back().index = ifIndex.size() - 1;
 
+	cout << "start is " << start << endl;
+	cout << "end is " << end << endl;
+
 	// Sets up some variables of the parent block depending on it's block type.
 	if ( parentBlockID[0].compare("ROUTINE") == 0)
 	{
@@ -342,9 +345,11 @@ void parseIf ( int start, int end, string parentBlockID[2] )
 
 	vector<vector<int>> subBlockVector;
 
-	// Read through the routineBlock to find any subblocks.
-	for ( int i = start+1; i <= end; i++ )
+	// Read through the ifBlock to find any subblocks.
+	for ( int i = start+1; i < end; i++ )
 	{
+		cout << i << endl;
+
 		string word = content[i][0];
 		
 		if ( word.compare("if") == 0 && tempStart == NULL )
@@ -410,23 +415,24 @@ void parseRoutine ( int start, int end )
 	vector<vector<int>> subBlockVector;
 
 	// Read through the routineBlock to find any subblocks.
-	for ( int i = start; i <= end; i++ )
+	for ( int i = start+1; i < end; i++ )
 	{
+		cout << i << endl;
 		string word = content[i][0];
 		
 		if ( word.compare("if") == 0 && tempStart == NULL )
 		{
-				tempStart = i;
+			tempStart = NULL;
+			tempEnd = NULL;
+			tempStart = i;
 		}
-		else if ( word.compare("endi") == 0 && tempEnd == NULL )
+		else if ( word.compare("endi") == 0 && tempEnd == NULL && tempStart != NULL )
 		{
 			tempEnd = i;
 			int x = tempStart;
 			int y = tempEnd;
 			vector<int> xy = {x,y};
 			subBlockVector.push_back(xy);
-			tempStart = NULL;
-			tempEnd = NULL;
 		};
 	};
 	// If we did find sub blocks, parse them; Otherwise, return.
